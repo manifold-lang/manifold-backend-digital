@@ -1,7 +1,7 @@
-WHDL
+Manifold Digital Backend
 ====
 
-You likely want the [whdl wiki](http://github.com/whdl/whdl/wiki) or [whdl administrative wiki](http://github.com/lucaswoj/whdl-administrative/wiki)
+[![Build Status](https://travis-ci.org/manifold-lang/manifold-backend-digital.svg)](https://travis-ci.org/manifold-lang/manifold-backend-digital)
+[![Coverage Status](https://img.shields.io/coveralls/manifold-lang/manifold-backend-digital.svg)](https://coveralls.io/r/manifold-lang/manifold-backend-digital)
 
-[![Build Status](https://travis-ci.org/manifold-lang/manifold.svg?branch=master)](https://travis-ci.org/manifold-lang/manifold)
-[![Coverage Status](https://img.shields.io/coveralls/manifold-lang/manifold.svg)](https://coveralls.io/r/manifold-lang/manifold)
+This repository contains a backend for generating digital circuit descriptions from Manifold schematics. The backend targets a synthesizable subset of VHDL.
