@@ -66,6 +66,10 @@ jacoco {
 }
 
 test {
+  copy {
+    from 'src/test/java/org/manifold/compiler/back/data'
+    into "$buildDir/classes/test/org/manifold/compiler/back/data"
+  }
   testLogging.showStandardStreams = true
   jacoco {
     append = false
