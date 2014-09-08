@@ -13,11 +13,11 @@ group = "org.manifold"
 // name = "manifold-backend-digital"
 version = '0.1.0-SNAPSHOT'
 
-//mainClassName = "org.manifold.compiler.Main"
+mainClassName = "org.manifold.compiler.back.digital.DigitalBackend"
 
 jar {
   manifest {
-    attributes 'Implementation-Title': 'Manifold Digital Backend', 'Implementation-Version': version
+    attributes 'Implementation-Title': 'Manifold Digital Backend', 'Implementation-Version': version, 'Main-Class': 'org.manifold.compiler.back.digital.DigitalBackend'
   }
 }
 
