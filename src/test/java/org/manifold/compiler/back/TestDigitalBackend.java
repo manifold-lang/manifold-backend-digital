@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -31,10 +33,15 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.manifold.compiler.UndefinedBehaviourError;
 import org.manifold.compiler.back.digital.DigitalBackend;
+import org.manifold.compiler.middle.Schematic;
+import org.manifold.compiler.middle.serialization.SchematicDeserializer;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 class CaptureAppender extends AppenderSkeleton {
 
@@ -90,7 +97,8 @@ public class TestDigitalBackend {
   @Test
   public void testOptionHDL_NotSpecified() throws ParseException {
     String[] args = {};
-    DigitalBackend backend = new DigitalBackend(args);
+    DigitalBackend backend = new DigitalBackend();
+    backend.readArguments(args);
     // some value should have been chosen
     assertNotNull(backend.getTargetHDL());
   }
@@ -101,7 +109,8 @@ public class TestDigitalBackend {
       "--hdl",
       "vhdl"
     };
-    DigitalBackend backend = new DigitalBackend(args);
+    DigitalBackend backend = new DigitalBackend();
+    backend.readArguments(args);
     DigitalBackend.TARGET_HDL targetHDL = backend.getTargetHDL();
     assertEquals(DigitalBackend.TARGET_HDL.VHDL, targetHDL);
   }
@@ -113,13 +122,14 @@ public class TestDigitalBackend {
       "--hdl",
       "bogus"
     };
-    DigitalBackend backend = new DigitalBackend(args);
+    DigitalBackend backend = new DigitalBackend();
+    backend.readArguments(args);
     fail("option error not detected");
   }
 
   @Test
   public void testIntegration_DigitalBackendVHDLCodeGeneration() 
-      throws IOException {
+      throws Exception {
     // Create a schematic in a specified (temporary) folder
     // and invoke the digital backend as though it were called
     // from the command line. Then check for the presence of an output
@@ -134,18 +144,23 @@ public class TestDigitalBackend {
     URL url = Resources
         .getResource("org/manifold/compiler/back/data/"
             + "schematic-InToOut.json");
-    String schematic = Resources.toString(url, Charsets.UTF_8);
+    String schematicSerial = Resources.toString(url, Charsets.UTF_8);
     BufferedWriter writer = Files.newBufferedWriter(tempSchematic.toPath(), 
         Charset.forName("ASCII"));
-    writer.write(schematic);
+    writer.write(schematicSerial);
     writer.close();
     String[] args = {
       "--hdl", "vhdl",
-      "--output", temppath,
-      // -- (inputs)
-      tempSchematicPath
+      "--output", temppath
     };
-    DigitalBackend.main(args);
+    
+    SchematicDeserializer deserializer = new SchematicDeserializer();
+    FileReader inFile = new FileReader(tempSchematic.getAbsolutePath());
+    JsonObject inputJson = new JsonParser().parse(inFile).getAsJsonObject();
+    Schematic schematic = deserializer.deserialize(inputJson);
+    
+    DigitalBackend backend = new DigitalBackend();
+    backend.invokeBackend(schematic, args);
     // this should not emit any error messages
     for (LoggingEvent ev : logCapture.getEvents()) {
       if (ev.getLevel().isGreaterOrEqual(Level.ERROR)) {
