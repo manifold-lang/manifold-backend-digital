@@ -1,7 +1,5 @@
 package org.manifold.compiler.back.digital;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,13 +13,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.manifold.compiler.Backend;
 import org.manifold.compiler.OptionError;
-import org.manifold.compiler.UndefinedBehaviourError;
 import org.manifold.compiler.middle.Schematic;
 import org.manifold.compiler.middle.SchematicException;
-import org.manifold.compiler.middle.serialization.SchematicDeserializer;
-
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 public class DigitalBackend implements Backend {
 
@@ -104,8 +97,6 @@ public class DigitalBackend implements Backend {
     collectOptionNoChecks(cmd);
   }
 
-  private List<String> inputs;
-
   public void readArguments(String[] args) throws ParseException {
     // set up options for command-line parsing
     createOptionDefinitions();
@@ -114,7 +105,6 @@ public class DigitalBackend implements Backend {
     CommandLine cmd = parser.parse(options, args);
     // retrieve command-line options
     collectOptions(cmd);
-    inputs = Arrays.asList(cmd.getArgs());
   }
 
   public void run(Schematic schematic) throws SchematicException {
