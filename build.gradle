@@ -17,7 +17,7 @@ mainClassName = "org.manifold.compiler.back.digital.DigitalBackend"
 
 jar {
   manifest {
-    attributes 'Implementation-Title': 'Manifold Digital Backend', 'Implementation-Version': version, 'Main-Class': 'org.manifold.compiler.back.digital.DigitalBackend'
+    attributes 'Implementation-Title': 'Manifold Digital Backend', 'Implementation-Version': version
   }
 }
 
