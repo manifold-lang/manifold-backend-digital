@@ -1,16 +1,44 @@
 package org.manifold.compiler.back;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.manifold.compiler.back.digital.DigitalBackend;
+import org.manifold.compiler.middle.Schematic;
+import org.manifold.compiler.middle.serialization.SchematicDeserializer;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 class CaptureAppender extends AppenderSkeleton {
 
@@ -63,42 +91,6 @@ public class TestDigitalBackend {
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
 
-  // TODO rewrite tests using new interface
-
-  /*
-  @Test
-  public void testOptionHDL_NotSpecified() throws ParseException {
-    String[] args = {};
-    DigitalBackend backend = new DigitalBackend();
-    backend.readArguments(args);
-    // some value should have been chosen
-    assertNotNull(backend.getTargetHDL());
-  }
-
-  @Test
-  public void testOptionHDL_VHDL() throws ParseException {
-    String[] args = {
-      "--hdl",
-      "vhdl"
-    };
-    DigitalBackend backend = new DigitalBackend();
-    backend.readArguments(args);
-    DigitalBackend.TARGET_HDL targetHDL = backend.getTargetHDL();
-    assertEquals(DigitalBackend.TARGET_HDL.VHDL, targetHDL);
-  }
-
-  @Test(expected = org.manifold.compiler.OptionError.class)
-  public void testOptionHDL_InvalidOption_ThrowsOptionError()
-      throws ParseException {
-    String[] args = {
-      "--hdl",
-      "bogus"
-    };
-    DigitalBackend backend = new DigitalBackend();
-    backend.readArguments(args);
-    fail("option error not detected");
-  }
-
   @Test
   public void testIntegration_DigitalBackendVHDLCodeGeneration()
       throws Exception {
@@ -132,7 +124,11 @@ public class TestDigitalBackend {
     Schematic schematic = deserializer.deserialize(inputJson);
 
     DigitalBackend backend = new DigitalBackend();
-    backend.invokeBackend(schematic, args);
+    Options options = new Options();
+    backend.registerArguments(options);
+    CommandLineParser parser = new org.apache.commons.cli.BasicParser();
+    CommandLine cmd = parser.parse(options, args);
+    backend.invokeBackend(schematic, cmd);
     // this should not emit any error messages
     for (LoggingEvent ev : logCapture.getEvents()) {
       if (ev.getLevel().isGreaterOrEqual(Level.ERROR)) {
@@ -164,5 +160,5 @@ public class TestDigitalBackend {
     }
     assertTrue("output product not found", found);
   }
-  */
+
 }
