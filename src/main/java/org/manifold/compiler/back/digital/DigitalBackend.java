@@ -1,14 +1,9 @@
 package org.manifold.compiler.back.digital;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.manifold.compiler.Backend;
@@ -20,8 +15,6 @@ public class DigitalBackend implements Backend {
 
   private static Logger log = LogManager.getLogger("DigitalBackend");
 
-  private Options options;
-
   public enum TARGET_HDL {
     VHDL,
   };
@@ -31,7 +24,7 @@ public class DigitalBackend implements Backend {
     return targetHDL;
   }
 
-  private void createOptionTargetHDL() {
+  private void createOptionTargetHDL(Options options) {
     Option hdl = new Option("h", "hdl", true, "target HDL type (vhdl)");
     options.addOption(hdl);
   }
@@ -53,7 +46,7 @@ public class DigitalBackend implements Backend {
 
   String outputDirectory = null;
 
-  private void createOptionOutputDirectory() {
+  private void createOptionOutputDirectory(Options options) {
     Option outDir = new Option("o", "output", true,
         "directory for output products");
     options.addOption(outDir);
@@ -69,7 +62,7 @@ public class DigitalBackend implements Backend {
   boolean noChecks = false;
 
   @SuppressWarnings("static-access")
-  private void createOptionNoChecks() {
+  private void createOptionNoChecks(Options options) {
     Option noChecks = OptionBuilder
         .withLongOpt("no-checks")
         .withDescription(
@@ -84,27 +77,16 @@ public class DigitalBackend implements Backend {
     }
   }
 
-  private void createOptionDefinitions() {
-    options = new Options();
-    createOptionTargetHDL();
-    createOptionOutputDirectory();
-    createOptionNoChecks();
+  private void createOptionDefinitions(Options options) {
+    createOptionTargetHDL(options);
+    createOptionOutputDirectory(options);
+    createOptionNoChecks(options);
   }
 
   private void collectOptions(CommandLine cmd) {
     collectOptionTargetHDL(cmd);
     collectOptionOutputDirectory(cmd);
     collectOptionNoChecks(cmd);
-  }
-
-  public void readArguments(String[] args) throws ParseException {
-    // set up options for command-line parsing
-    createOptionDefinitions();
-    // parse command line
-    CommandLineParser parser = new org.apache.commons.cli.BasicParser();
-    CommandLine cmd = parser.parse(options, args);
-    // retrieve command-line options
-    collectOptions(cmd);
   }
 
   public void run(Schematic schematic) throws SchematicException {
@@ -123,17 +105,22 @@ public class DigitalBackend implements Backend {
   }
 
   public DigitalBackend() { }
-  
+
   @Override
   public String getBackendName() {
     return "digital";
   }
 
   @Override
-  public void invokeBackend(Schematic schematic, String[] args) 
+  public void invokeBackend(Schematic schematic, CommandLine cmd)
       throws Exception {
-    readArguments(args);
+    collectOptions(cmd);
     run(schematic);
+  }
+
+  @Override
+  public void registerArguments(Options options) {
+    createOptionDefinitions(options);
   }
 
 }
