@@ -114,8 +114,8 @@ public class TestDigitalBackend {
     writer.write(schematicSerial);
     writer.close();
     String[] args = {
-      "--hdl", "vhdl",
-      "--output", temppath
+        "--hdl", "vhdl",
+        "--output", temppath
     };
 
     SchematicDeserializer deserializer = new SchematicDeserializer();
