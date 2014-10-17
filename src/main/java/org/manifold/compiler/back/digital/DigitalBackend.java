@@ -15,12 +15,12 @@ public class DigitalBackend implements Backend {
 
   private static Logger log = LogManager.getLogger("DigitalBackend");
 
-  public enum TARGET_HDL {
+  public enum TargetHDL {
     VHDL,
   };
 
-  private TARGET_HDL targetHDL = null;
-  public TARGET_HDL getTargetHDL() {
+  private TargetHDL targetHDL = null;
+  public TargetHDL getTargetHDL() {
     return targetHDL;
   }
 
@@ -33,11 +33,11 @@ public class DigitalBackend implements Backend {
     String hdl = cmd.getOptionValue("hdl");
     if (hdl == null) {
       log.warn("no target HDL specified, assuming VHDL");
-      targetHDL = TARGET_HDL.VHDL;
+      targetHDL = TargetHDL.VHDL;
     } else {
       hdl = hdl.toLowerCase();
       if (hdl.equals("vhdl")) {
-        targetHDL = TARGET_HDL.VHDL;
+        targetHDL = TargetHDL.VHDL;
       } else {
         throw new OptionError("target HDL '" + hdl + "' not recognized");
       }

@@ -24,16 +24,16 @@ import org.manifold.compiler.middle.SchematicException;
 public class UtilSchematicConstruction {
 
   private static boolean setUp = false;
-  
+
   public static PortTypeValue digitalInPortType;
   public static PortTypeValue digitalOutPortType;
 
-  private static final Map<String, TypeValue> noTypeAttributes 
-    = new HashMap<>();
+  private static final Map<String, TypeValue> noTypeAttributes
+      = new HashMap<>();
   private static final Map<String, Value> noAttributes = new HashMap<>();
 
-  private static Map<String, TypeValue> registerTypeAttributes 
-    = new HashMap<>();
+  private static Map<String, TypeValue> registerTypeAttributes
+      = new HashMap<>();
   private static Map<String, PortTypeValue> registerTypePorts = new HashMap<>();
   private static NodeTypeValue registerType;
 
@@ -45,12 +45,12 @@ public class UtilSchematicConstruction {
 
   private static Map<String, PortTypeValue> notTypePorts = new HashMap<>();
   private static NodeTypeValue notType;
-  
+
   private static Map<String, PortTypeValue> inputPinTypePorts = new HashMap<>();
   private static NodeTypeValue inputPinType;
 
-  private static Map<String, PortTypeValue> outputPinTypePorts 
-    = new HashMap<>();
+  private static Map<String, PortTypeValue> outputPinTypePorts
+      = new HashMap<>();
   private static NodeTypeValue outputPinType;
 
   private static ConnectionType digitalWireType;
@@ -77,16 +77,16 @@ public class UtilSchematicConstruction {
     andTypePorts.put("in1", digitalInPortType);
     andTypePorts.put("out", digitalOutPortType);
     andType = new NodeTypeValue(noTypeAttributes, andTypePorts);
-    
+
     orTypePorts.put("in0", digitalInPortType);
     orTypePorts.put("in1", digitalInPortType);
     orTypePorts.put("out", digitalOutPortType);
     orType = new NodeTypeValue(noTypeAttributes, orTypePorts);
-    
+
     notTypePorts.put("in", digitalInPortType);
     notTypePorts.put("out", digitalOutPortType);
     notType = new NodeTypeValue(noTypeAttributes, notTypePorts);
-    
+
     inputPinTypePorts.put("out", digitalOutPortType);
     inputPinType = new NodeTypeValue(noTypeAttributes, inputPinTypePorts);
 
@@ -94,7 +94,7 @@ public class UtilSchematicConstruction {
     outputPinType = new NodeTypeValue(noTypeAttributes, outputPinTypePorts);
 
     digitalWireType = new ConnectionType(noTypeAttributes);
-    
+
     setUp = true;
   }
 
@@ -102,7 +102,7 @@ public class UtilSchematicConstruction {
    * Instantiate a Schematic, but with varying degrees of "completeness" in
    * terms of what object types are included. If types are missing, it will not
    * be possible to construct a Netlist.
-   * 
+   *
    * @throws MultipleDefinitionException
    */
   public static Schematic instantiateSchematic(String name,
@@ -161,7 +161,7 @@ public class UtilSchematicConstruction {
         registerPortAttrs);
     return register;
   }
-  
+
   public static NodeValue instantiateAnd() throws SchematicException {
     Map<String, Map<String, Value>> andPortAttrs = new HashMap<>();
     andPortAttrs.put("in0", noAttributes);
@@ -170,7 +170,7 @@ public class UtilSchematicConstruction {
     NodeValue andGate = new NodeValue(andType, noAttributes, andPortAttrs);
     return andGate;
   }
-  
+
   public static NodeValue instantiateOr() throws SchematicException {
     Map<String, Map<String, Value>> orPortAttrs = new HashMap<>();
     orPortAttrs.put("in0", noAttributes);
@@ -179,7 +179,7 @@ public class UtilSchematicConstruction {
     NodeValue orGate = new NodeValue(orType, noAttributes, orPortAttrs);
     return orGate;
   }
-  
+
   public static NodeValue instantiateNot() throws SchematicException {
     Map<String, Map<String, Value>> notPortAttrs = new HashMap<>();
     notPortAttrs.put("in", noAttributes);
