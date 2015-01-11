@@ -11,7 +11,7 @@ targetCompatibility = 1.8
 
 group = "org.manifold"
 // name = "manifold-backend-digital"
-version = '0.3.0-SNAPSHOT'
+version = '0.4.0-SNAPSHOT'
 
 mainClassName = "org.manifold.compiler.back.digital.DigitalBackend"
 
@@ -28,6 +28,9 @@ repositories {
     name 'Manifold release repository'
     url 'http://manifold-lang.org/releases'
   }
+  flatDir { // NOCOMMIT
+    dirs '/home/mtrberzi/manifold/core/build/libs'
+  }
 }
 
 run {
@@ -40,7 +43,7 @@ dependencies {
   testCompile 'junit:junit:4.11'
   compile 'log4j:log4j:1.2.16'
   compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-  compile 'org.manifold:manifold-core:0.6+'
+  compile 'org.manifold:manifold-core:0.9.+'
 }
 
 buildscript {
