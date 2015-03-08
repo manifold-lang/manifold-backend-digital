@@ -86,6 +86,7 @@ public class VHDLCodeGenerator {
   private List<Check> buildStandardChecks() {
     List<Check> checks = new ArrayList<Check>();
     checks.add(new NoMultipleDriversCheck(schematic, netlist));
+    checks.add(new NoUnconnectedInputsCheck(schematic, netlist));
     return checks;
   }
   
