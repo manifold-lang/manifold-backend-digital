@@ -3,13 +3,10 @@ package org.manifold.compiler.back.digital;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,11 +14,8 @@ import java.util.Set;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.manifold.compiler.BooleanValue;
-import org.manifold.compiler.NodeTypeValue;
 import org.manifold.compiler.NodeValue;
-import org.manifold.compiler.PortTypeValue;
 import org.manifold.compiler.PortValue;
-import org.manifold.compiler.TypeMismatchException;
 import org.manifold.compiler.UndeclaredAttributeException;
 import org.manifold.compiler.UndeclaredIdentifierException;
 import org.manifold.compiler.UndefinedBehaviourError;
@@ -32,7 +26,8 @@ public class VHDLCodeGenerator {
   private static String newline = System.getProperty("line.separator");
 
   private Schematic schematic;
-  private Netlist netlist = null;
+  private Netlist netlist;
+  private PrimitiveTypeTable typeTable;
 
   private String outputDirectory;
   public void setOutputDirectory(String dir) {
@@ -47,19 +42,11 @@ public class VHDLCodeGenerator {
   // name of VHDL architecture corresponding to generated entities
   private String architecture = "MANIFOLD";
 
-  private PortTypeValue inputPortType = null;
-  private PortTypeValue outputPortType = null;
-  
-  private NodeTypeValue inputPinType = null;
-  private NodeTypeValue outputPinType = null;
-
-  private NodeTypeValue registerType = null;
-  private NodeTypeValue andType = null;
-  private NodeTypeValue orType = null;
-  private NodeTypeValue notType = null;
-
-  public VHDLCodeGenerator(Schematic schematic) {
+  public VHDLCodeGenerator(Schematic schematic, Netlist netlist,
+      PrimitiveTypeTable typeTable) {
     this.schematic = schematic;
+    this.netlist = netlist;
+    this.typeTable = typeTable;
     // by default, output to current working directory
     this.outputDirectory = Paths.get("").toAbsolutePath().toString();
   }
@@ -82,82 +69,8 @@ public class VHDLCodeGenerator {
       return "\\" + id + "\\";
     }
   }
-
-  private List<Check> buildStandardChecks() {
-    List<Check> checks = new ArrayList<Check>();
-    checks.add(new NoMultipleDriversCheck(schematic, netlist));
-    checks.add(new NoUnconnectedInputsCheck(schematic, netlist));
-    return checks;
-  }
   
   public void generateOutputProducts() {
-    // check if directory exists
-    Path outDir = Paths.get(outputDirectory);
-    if (!Files.exists(outDir)) {
-      err("output directory '" + outputDirectory + "' does not exist");
-    }
-    if (!Files.isWritable(outDir)) {
-      err("output directory '" + outputDirectory + "' is not writable");
-    }
-    log.info("Will generate output products in '" + outputDirectory + "'");
-
-    // build netlist from schematic
-    try {
-      log.info("Building netlist");
-      netlist = new Netlist(schematic);
-    } catch (UndeclaredIdentifierException | TypeMismatchException e) {
-      err(e.getMessage());
-    }
-
-    // get information from the schematic about which node types to use
-
-    try {
-      inputPortType = schematic.getPortType("digitalIn");
-      outputPortType = schematic.getPortType("digitalOut");
-      inputPinType = schematic.getNodeType("inputPin");
-      outputPinType = schematic.getNodeType("outputPin");
-      registerType = schematic.getNodeType("register");
-      andType = schematic.getNodeType("and");
-      orType = schematic.getNodeType("or");
-      notType = schematic.getNodeType("not");
-    } catch (UndeclaredIdentifierException e) {
-      err("could not find required digital design type '"
-          + e.getIdentifier() + "'; schematic version mismatch or "
-          + " not a digital schematic");
-    }
-
-    if (runChecks) {
-      log.info("constructing design checklist");
-      // checks we always run
-      List<Check> checks = buildStandardChecks();
-      int numChecks = checks.size();
-      int successes = 0;
-      int failures = 0;
-      log.info(Integer.toString(numChecks) + " checks to run");
-      for (Check check : checks) {
-        log.info("running check: " + check.getName());
-        boolean result = check.run();
-        if (result) {
-          ++successes;
-          log.info("check passed: " + check.getName());
-        } else {
-          ++failures;
-          log.error("check failed: " + check.getName());
-        }
-        log.info("check summary: "
-            + Integer.toString(successes) + "/" + Integer.toString(numChecks)
-            + " checks successful, "
-            + Integer.toString(failures) + "/" + Integer.toString(numChecks)
-            + " checks failed");
-        // if there were any failures, abort
-        if (failures > 0) {
-          err("design check failed");
-        }
-      }
-    } else {
-      log.warn("skipping all design checks");
-    }
-    
     // we don't support multiple output files yet, but we set up
     // the "hierarchical elaboration" method now so that when we do,
     // this will work with minimal effort
@@ -184,13 +97,13 @@ public class VHDLCodeGenerator {
       for (Entry<String, NodeValue> entry : schematic.getNodes().entrySet()) {
         String nodeName = entry.getKey();
         NodeValue node = entry.getValue();
-        if (node.getType().equals(inputPinType)) {
+        if (node.getType().equals(typeTable.getInputPinType())) {
           // this is a top-level input
           log.debug("Identified top-level input " + nodeName);
           PortValue inputPort = node.getPort("out");
           Net inputNet = netlist.getConnectedNet(inputPort);
           inputNets.add(inputNet);
-        } else if (node.getType().equals(outputPinType)) {
+        } else if (node.getType().equals(typeTable.getOutputPinType())) {
           // this is a top-level output
           log.debug("Identified top-level output " + nodeName);
           PortValue outputPort = node.getPort("in");
@@ -258,7 +171,7 @@ public class VHDLCodeGenerator {
         // we need to check whether this is a register, and if so,
         // assign the signal an initial value
         NodeValue node = getDriver(net);
-        if (node.getType().equals(registerType)) {
+        if (node.getType().equals(typeTable.getRegisterType())) {
           try {
             boolean initialValue = ((BooleanValue) node
                 .getAttribute("initialValue")).toBoolean();
@@ -323,7 +236,7 @@ public class VHDLCodeGenerator {
         // look for the outputPin(s) driven by this net
         for (PortValue p : outNet.getConnectedPorts()) {
           NodeValue node = p.getParent();
-          if (node.getType().equals(outputPinType)) {
+          if (node.getType().equals(typeTable.getOutputPinType())) {
             String outputName = schematic.getNodeName(node);
             decl.append(outputName);
             decl.append(" : out STD_LOGIC");
@@ -359,7 +272,7 @@ public class VHDLCodeGenerator {
       String netName = escapeIdentifier(outNet.getName());
       for (PortValue p : outNet.getConnectedPorts()) {
         NodeValue node = p.getParent();
-        if (node.getType().equals(outputPinType)) {
+        if (node.getType().equals(typeTable.getOutputPinType())) {
           String outputName = schematic.getNodeName(node);
           log.debug("net '" + netName + "' maps to output '" 
               + outputName + "'");
@@ -373,7 +286,7 @@ public class VHDLCodeGenerator {
 
   private String generateNode(String nodeName, NodeValue node) {
     StringBuilder stmts = new StringBuilder();
-    if (node.getType().equals(registerType)) {
+    if (node.getType().equals(typeTable.getRegisterType())) {
       /*
        * Registers have a number of attributes that we care about for codegen:
        * initialValue (boolean), resetActiveHigh (boolean), resetAsynchronous
@@ -457,7 +370,7 @@ public class VHDLCodeGenerator {
       } catch (UndeclaredIdentifierException | UndeclaredAttributeException e) {
         err(e.getMessage());
       }
-    } else if (node.getType().equals(andType)) {
+    } else if (node.getType().equals(typeTable.getAndType())) {
       // out <= (in0 AND in1);
       try {
         String sigIn0 = escapeIdentifier(netlist.getConnectedNet(
@@ -471,7 +384,7 @@ public class VHDLCodeGenerator {
       } catch (UndeclaredIdentifierException e) {
         err(e.getMessage());
       }
-    } else if (node.getType().equals(orType)) {
+    } else if (node.getType().equals(typeTable.getOrType())) {
       // out <= (in0 OR in1);
       try {
         String sigIn0 = escapeIdentifier(netlist.getConnectedNet(
@@ -485,7 +398,7 @@ public class VHDLCodeGenerator {
       } catch (UndeclaredIdentifierException e) {
         err(e.getMessage());
       }
-    } else if (node.getType().equals(notType)) {
+    } else if (node.getType().equals(typeTable.getNotType())) {
       // out <= (NOT in);
       try {
         String sigIn = escapeIdentifier(netlist.getConnectedNet(
@@ -515,7 +428,7 @@ public class VHDLCodeGenerator {
   private NodeValue getDriver(Net net) {
     // PRECONDITION: DRC has verified that exactly one digitalOut is connected
     for (PortValue port : net.getConnectedPorts()) {
-      if (port.getType() == outputPortType) {
+      if (port.getType().equals(typeTable.getOutputPortType())) {
         return port.getParent();
       }
     }

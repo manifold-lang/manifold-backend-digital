@@ -28,7 +28,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.manifold.compiler.ConnectionValue;
 import org.manifold.compiler.NodeValue;
-import org.manifold.compiler.back.digital.CodeGenerationError;
+import org.manifold.compiler.TypeMismatchException;
+import org.manifold.compiler.UndeclaredIdentifierException;
+import org.manifold.compiler.back.digital.Netlist;
+import org.manifold.compiler.back.digital.PrimitiveTypeTable;
 import org.manifold.compiler.back.digital.VHDLCodeGenerator;
 import org.manifold.compiler.middle.Schematic;
 import org.manifold.compiler.middle.SchematicException;
@@ -59,8 +62,11 @@ public class TestVHDLCodeGenerator {
   public TemporaryFolder folder = new TemporaryFolder();
 
   private List<String> schematicToVHDL(Schematic schematic) 
-      throws IOException {
-    VHDLCodeGenerator codegen = new VHDLCodeGenerator(schematic);
+      throws IOException, UndeclaredIdentifierException, TypeMismatchException {
+    Netlist netlist = new Netlist(schematic);
+    PrimitiveTypeTable typeTable = new PrimitiveTypeTable(schematic);
+    VHDLCodeGenerator codegen = new VHDLCodeGenerator(
+        schematic, netlist, typeTable);
     File tempdir = folder.getRoot();
     String temppath = tempdir.getAbsolutePath();
     codegen.setOutputDirectory(temppath);
@@ -128,7 +134,11 @@ public class TestVHDLCodeGenerator {
         in0.getPort("out"), out0.getPort("in"));
     schematic.addConnection("in0_to_out0", in0ToOut0);
     
-    VHDLCodeGenerator codegen = new VHDLCodeGenerator(schematic);
+    Netlist netlist = new Netlist(schematic);
+    PrimitiveTypeTable typeTable = new PrimitiveTypeTable(schematic);
+    
+    VHDLCodeGenerator codegen = new VHDLCodeGenerator(
+        schematic, netlist, typeTable);
     File tempdir = folder.getRoot();
     String temppath = tempdir.getAbsolutePath();
     codegen.setOutputDirectory(temppath);
@@ -448,33 +458,6 @@ public class TestVHDLCodeGenerator {
         archBlock.isEmpty());
     assertEquals("expect exactly 1 NOT gate in generated code",
         1, notAssigns);
-  }
-  
-  @Test
-  public void testNonExistentOutputDirectoryThrowsException() 
-      throws SchematicException {
-    // Establish a simple demo schematic
-    Schematic schematic = UtilSchematicConstruction
-        .instantiateSchematic("test");
-    NodeValue in0 = UtilSchematicConstruction.instantiateInputPin();
-    schematic.addNode("in0", in0);
-    NodeValue out0 = UtilSchematicConstruction.instantiateOutputPin();
-    schematic.addNode("out0", out0);
-    ConnectionValue in0ToOut0 = UtilSchematicConstruction.instantiateWire(
-        in0.getPort("out"), out0.getPort("in"));
-    schematic.addConnection("in0_to_out0", in0ToOut0);
-
-    VHDLCodeGenerator codegen = new VHDLCodeGenerator(schematic);
-    String currentDir = Paths.get("").toAbsolutePath().toString();
-    String bogusPath = currentDir + "/__bogusDirectory";
-    codegen.setOutputDirectory(bogusPath);
-    try {
-      codegen.generateOutputProducts();
-      fail("non-existant output directory was not detected as an error");
-    } catch (CodeGenerationError e) {
-      assertTrue("wrong error message: '" + e.getMessage() + "'",
-          e.getMessage().contains("does not exist"));
-    }
   }
 
 }
