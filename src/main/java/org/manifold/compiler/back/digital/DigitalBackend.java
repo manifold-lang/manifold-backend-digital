@@ -29,6 +29,7 @@ public class DigitalBackend implements Backend {
   
   public enum TargetHDL {
     VHDL,
+    SMT2,
   };
 
   private TargetHDL targetHDL = null;
@@ -37,7 +38,7 @@ public class DigitalBackend implements Backend {
   }
 
   private void createOptionTargetHDL(Options options) {
-    Option hdl = new Option("h", "hdl", true, "target HDL type (vhdl)");
+    Option hdl = new Option("h", "hdl", true, "target HDL type (vhdl, smt2)");
     options.addOption(hdl);
   }
 
@@ -50,6 +51,8 @@ public class DigitalBackend implements Backend {
       hdl = hdl.toLowerCase();
       if (hdl.equals("vhdl")) {
         targetHDL = TargetHDL.VHDL;
+      } else if (hdl.equals("smt2")) {
+        targetHDL = TargetHDL.SMT2;
       } else {
         throw new OptionError("target HDL '" + hdl + "' not recognized");
       }
@@ -177,6 +180,19 @@ public class DigitalBackend implements Backend {
           }
           vhdlGen.generateOutputProducts();
         } // end case VHDL
+          break;
+        case SMT2: {
+          SMT2CodeGenerator smtgen = new SMT2CodeGenerator(
+              schematic, netlist, typeTable);
+          if (outputDirectory != null) {
+            smtgen.setOutputDirectory(outputDirectory);
+          }
+          if (noChecks) {
+            smtgen.setRunChecks(false);
+          }
+          smtgen.generateOutputProducts();
+        } // end case SMT2
+          break;
     }
   }
 
