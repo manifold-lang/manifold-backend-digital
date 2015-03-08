@@ -3,9 +3,11 @@
 "portTypes": {
 
 "digitalOut": {
+  "signalType": "Bool",
   "attributes": {}
 },
 "digitalIn": {
+  "signalType": "Bool",
   "attributes": {}
 }
 
@@ -57,11 +59,6 @@
       "in": "digitalIn",
       "out": "digitalOut"
     }
-  }
-},
-"connectionTypes": {
-  "digitalWire": {
-    "attributes": {}
   }
 },
 "constraintTypes": {

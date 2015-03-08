@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.manifold.compiler.ConnectionType;
 import org.manifold.compiler.ConnectionValue;
 import org.manifold.compiler.PortTypeValue;
 import org.manifold.compiler.PortValue;
@@ -16,7 +15,6 @@ import com.google.common.collect.ImmutableMap;
 
 public class Netlist {
 
-  private ConnectionType digitalWireType;
   private PortTypeValue digitalInType;
   private PortTypeValue digitalOutType;
 
@@ -38,7 +36,6 @@ public class Netlist {
 
   public Netlist(Schematic schematic) throws UndeclaredIdentifierException,
       TypeMismatchException {
-    digitalWireType = schematic.getConnectionType("digitalWire");
     digitalInType = schematic.getPortType("digitalIn");
     digitalOutType = schematic.getPortType("digitalOut");
 
@@ -47,8 +44,6 @@ public class Netlist {
         .entrySet()) {
       String connectionName = connEntry.getKey();
       ConnectionValue connection = connEntry.getValue();
-
-      verifyConnectionIsDigitalWire(connection);
 
       // get both ports
       PortValue portFrom = connection.getFrom();
@@ -79,13 +74,6 @@ public class Netlist {
           connectToNet(portTo, newNet);
         }
       }
-    }
-  }
-
-  private void verifyConnectionIsDigitalWire(ConnectionValue connection)
-      throws TypeMismatchException {
-    if (!connection.getType().equals(digitalWireType)) {
-      throw new TypeMismatchException(digitalWireType, connection.getType());
     }
   }
 

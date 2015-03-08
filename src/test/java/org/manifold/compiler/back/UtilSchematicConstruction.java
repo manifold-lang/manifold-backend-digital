@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.manifold.compiler.BooleanTypeValue;
 import org.manifold.compiler.BooleanValue;
-import org.manifold.compiler.ConnectionType;
 import org.manifold.compiler.ConnectionValue;
 import org.manifold.compiler.InvalidAttributeException;
 import org.manifold.compiler.MultipleDefinitionException;
@@ -53,12 +52,12 @@ public class UtilSchematicConstruction {
       = new HashMap<>();
   private static NodeTypeValue outputPinType;
 
-  private static ConnectionType digitalWireType;
-
   public static void setupIntermediateTypes() {
 
-    digitalInPortType = new PortTypeValue(noTypeAttributes);
-    digitalOutPortType = new PortTypeValue(noTypeAttributes);
+    digitalInPortType = new PortTypeValue(BooleanTypeValue.getInstance(),
+        noTypeAttributes);
+    digitalOutPortType = new PortTypeValue(BooleanTypeValue.getInstance(),
+        noTypeAttributes);
 
     registerTypeAttributes.put("initialValue", BooleanTypeValue.getInstance());
     registerTypeAttributes.put("resetActiveHigh",
@@ -93,8 +92,6 @@ public class UtilSchematicConstruction {
     outputPinTypePorts.put("in", digitalInPortType);
     outputPinType = new NodeTypeValue(noTypeAttributes, outputPinTypePorts);
 
-    digitalWireType = new ConnectionType(noTypeAttributes);
-
     setUp = true;
   }
 
@@ -106,8 +103,8 @@ public class UtilSchematicConstruction {
    * @throws MultipleDefinitionException
    */
   public static Schematic instantiateSchematic(String name,
-      boolean includePortTypes, boolean includeNodeTypes,
-      boolean includeConnectionTypes) throws MultipleDefinitionException {
+      boolean includePortTypes, boolean includeNodeTypes)
+          throws MultipleDefinitionException {
     if (!setUp) {
       setupIntermediateTypes();
     }
@@ -126,10 +123,6 @@ public class UtilSchematicConstruction {
       s.addNodeType("outputPin", outputPinType);
     }
 
-    if (includeConnectionTypes) {
-      s.addConnectionType("digitalWire", digitalWireType);
-    }
-
     return s;
   }
 
@@ -138,7 +131,7 @@ public class UtilSchematicConstruction {
    */
   public static Schematic instantiateSchematic(String name)
       throws MultipleDefinitionException {
-    return instantiateSchematic(name, true, true, true);
+    return instantiateSchematic(name, true, true);
   }
 
   public static NodeValue instantiateRegister(boolean initialValue,
@@ -207,8 +200,7 @@ public class UtilSchematicConstruction {
   public static ConnectionValue instantiateWire(PortValue from, PortValue to)
       throws UndeclaredAttributeException, InvalidAttributeException,
       TypeMismatchException {
-    ConnectionValue wire = new ConnectionValue(digitalWireType, from, to,
-        noAttributes);
+    ConnectionValue wire = new ConnectionValue(from, to, noAttributes);
     return wire;
   }
 }

@@ -1,11 +1,13 @@
 package org.manifold.compiler.back;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.manifold.compiler.BooleanTypeValue;
 import org.manifold.compiler.NodeTypeValue;
 import org.manifold.compiler.NodeValue;
 import org.manifold.compiler.PortTypeValue;
@@ -33,7 +35,7 @@ public class TestNet {
   @Test
   public void testAddPort() throws SchematicException {
     Net n = new Net("asdf");
-    PortTypeValue portType = new PortTypeValue(
+    PortTypeValue portType = new PortTypeValue(BooleanTypeValue.getInstance(),
         new HashMap<String, TypeValue>());
     NodeTypeValue nodeType = new NodeTypeValue(new HashMap<String, TypeValue>(),
         new HashMap<String, PortTypeValue>());
