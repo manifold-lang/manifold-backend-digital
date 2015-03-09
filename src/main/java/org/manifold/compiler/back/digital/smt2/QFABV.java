@@ -10,23 +10,17 @@ public class QFABV {
   }
   
   public static SExpression declareBitVector(Symbol sym, long width) {
-    SExpression exprs[] = new SExpression[] {
-        new Symbol("declare-fun"),
+    return new ParenList(new Symbol("declare-fun"),
         sym,
         new ParenList(),
-        new ParenList(new SExpression[]{
-            new Symbol("_"), new Symbol("BitVec"), new Numeral(width)})
-        };
-    return new ParenList(exprs);
+        new ParenList(new Symbol("_"), new Symbol("BitVec"), new Numeral(width)
+        ));
   }
   
   private static SExpression infix(SExpression e1, String op, SExpression e2) {
-    SExpression exprs[] = new SExpression[] {
-        new Symbol(op),
+    return new ParenList(new Symbol(op),
         e1,
-        e2
-    };
-    return new ParenList(exprs);
+        e2);
   }
   
   public static SExpression equal(SExpression e1, SExpression e2) {
@@ -34,11 +28,7 @@ public class QFABV {
   }
   
   public static SExpression assertThat(SExpression term) {
-    SExpression assertExprs[] = new SExpression[] {
-        new Symbol("assert"),
-        term
-    };
-    return new ParenList(assertExprs);
+    return new ParenList(new Symbol("assert"), term);
   }
   
   //(assert (= sym #b0))
@@ -60,22 +50,15 @@ public class QFABV {
   }
   
   public static SExpression not(SExpression e) {
-    SExpression exprs[] = new SExpression[] {
-        new Symbol("bvnot"),
-        e
-    };
-    return new ParenList(exprs);
+    return new ParenList(new Symbol("bvnot"), e);
   }
   
   public static SExpression conditional(
       SExpression cond, SExpression t, SExpression f) {
-    SExpression exprs[] = new SExpression[] {
-        new Symbol("ite"), // "if-then-else"
+    return new ParenList(new Symbol("ite"), // "if-then-else"
         cond,
         t,
-        f
-    };
-    return new ParenList(exprs);
+        f);
   }
   
 }

@@ -16,11 +16,7 @@ public class ParenList extends SExpression {
   
   public ParenList() { }
   
-  public ParenList(SExpression expr) {
-    this.exprs.add(expr);
-  }
-  
-  public ParenList(SExpression exprs[]) {
+  public ParenList(SExpression... exprs) {
     for (SExpression expr : exprs) {
       this.exprs.add(expr);
     }
