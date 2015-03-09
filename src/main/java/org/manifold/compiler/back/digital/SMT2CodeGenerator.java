@@ -230,8 +230,8 @@ public class SMT2CodeGenerator {
   }
   
   public void generateOutputProducts() {
-    if (numberOfStates < 1) {
-      err("invalid number of states specified; must be at least 1");
+    if (numberOfStates < 0) {
+      err("invalid number of states specified; must be non-negative");
     }
     
     String entityName = schematic.getName();

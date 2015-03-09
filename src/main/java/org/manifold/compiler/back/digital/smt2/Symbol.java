@@ -29,6 +29,7 @@ public class Symbol extends SExpression {
   }
   
   public Symbol(String name) {
+    /*
     // If the name isn't delimited by |s, add them.
     if (!name.startsWith("|")) {
       name = "|" + name;
@@ -37,6 +38,7 @@ public class Symbol extends SExpression {
       name = name + "|";
     }
     validateName(name);
+    */
     this.name = name;
   }
   
