@@ -1,6 +1,8 @@
 package org.manifold.compiler.back.digital;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -240,7 +242,8 @@ public class SMT2CodeGenerator {
     File outfile = new File(outpath.toString());
     log.info("Generating " + filename);
     
-    try (PrintWriter writer = new PrintWriter(outfile, "US-ASCII");) {
+    try (PrintWriter writer = new PrintWriter(new BufferedWriter(
+        new FileWriter(outfile)));) {
       // SMT2 logic header: QF_ABV
       // TODO if no component is modelled as an array, emit QF_BV
       // TODO check to make sure all nets are driven

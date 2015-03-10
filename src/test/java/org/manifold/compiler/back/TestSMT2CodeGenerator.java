@@ -119,7 +119,7 @@ public class TestSMT2CodeGenerator {
       fail(x.getMessage());
     }
 
-    // check that "test.vhd" was generated
+    // check that "test.smt2" was generated
     boolean found = false;
     Path testSMT = null;
     for (Path file : outputFiles) {
